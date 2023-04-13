@@ -50,7 +50,7 @@ class SongsServices {
       throw new NotFoundError('Lagu tidak ditemukan');
     }
 
-    return result.rows.map(mapSongDBToModel)[0];
+    return mapSongDBToModel(result.rows[0]);
   }
 
   async editSongById(id, {
@@ -80,6 +80,15 @@ class SongsServices {
     if (!result.rows.length) {
       throw new NotFoundError('Lagu gagal dihapus. Id tidak ditemukan');
     }
+  }
+
+  async getSongsByAlbumId(albumId) {
+    const query = {
+      text: 'SELECT id, title, performer FROM songs WHERE album_id = $1',
+      values: [albumId],
+    };
+    const result = await this._pool.query(query);
+    return result.rows;
   }
 }
 
