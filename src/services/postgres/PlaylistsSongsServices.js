@@ -4,11 +4,13 @@ const InvariantError = require('../../exceptions/InvariantError');
 const NotFoundError = require('../../exceptions/NotFoundError');
 
 class PlaylistsSongsServices {
-  constructor() {
+  constructor(songsServices) {
     this._pool = new Pool();
+    this._songsServices = songsServices;
   }
 
   async addPlaylistsSong(playlistId, songId) {
+    await this._songsServices.verifySongExistence(songId);
     const id = `song-${nanoid(16)}`;
 
     const query = {
@@ -21,8 +23,6 @@ class PlaylistsSongsServices {
     if (!result.rows.length) {
       throw new InvariantError('Lagu gagal ditambahkan ke dalam playlist');
     }
-
-    return result.rows[0].id;
   }
 
   async getPlaylistsSongs(playlistId) {
