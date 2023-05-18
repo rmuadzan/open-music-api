@@ -11,6 +11,8 @@ const {
   UsersServices,
   SongsServices,
   AuthenticationsServices,
+  PlaylistsServices,
+  PlaylistsSongsServices,
 } = require('./services/postgres');
 const ClientError = require('./exceptions/ClientError');
 const users = require('./api/users');
@@ -18,12 +20,17 @@ const UsersValidator = require('./validator/users');
 const authentications = require('./api/authentications');
 const TokenManager = require('./tokenize/tokenManager');
 const AuthenticationsValidator = require('./validator/authentications');
+const playlists = require('./api/playlists');
+const PlaylistsValidator = require('./validator/playlists');
+const PlaylistsSongsValidator = require('./validator/playlistsSongs');
 
 const init = async () => {
   const albumsServices = new AlbumsServices();
   const songsServices = new SongsServices();
   const usersServices = new UsersServices();
   const authenticationsServices = new AuthenticationsServices();
+  const playlistsServices = new PlaylistsServices();
+  const playlistsSongsServices = new PlaylistsSongsServices();
 
   const server = Hapi.server({
     port: process.env.PORT,
@@ -41,7 +48,7 @@ const init = async () => {
     },
   ]);
 
-  server.auth.strategy('notesapp_jwt', 'jwt', {
+  server.auth.strategy('openmusicapp_jwt', 'jwt', {
     keys: process.env.ACCESS_TOKEN_KEY,
     verify: {
       aud: false,
@@ -52,7 +59,7 @@ const init = async () => {
     validate: (artifacts) => ({
       isValid: true,
       credentials: {
-        id: artifacts.decoded.payload.id,
+        userId: artifacts.decoded.payload.userId,
       },
     }),
   });
@@ -87,6 +94,16 @@ const init = async () => {
         usersServices,
         tokenManager: TokenManager,
         validator: AuthenticationsValidator,
+      },
+    },
+    {
+      plugin: playlists,
+      options: {
+        playlistsServices,
+        playlistsSongsServices,
+        songsServices,
+        playlistsValidator: PlaylistsValidator,
+        playlistsSongsValidator: PlaylistsSongsValidator,
       },
     },
   ]);

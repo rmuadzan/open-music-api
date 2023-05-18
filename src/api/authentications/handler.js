@@ -14,10 +14,10 @@ class AuthenticationsHandler {
     this._validator.validatePostAuthenticationPayload(request.payload);
 
     const { username, password } = request.payload;
-    const id = await this._usersServices.verifyUserCredential(username, password);
+    const userId = await this._usersServices.verifyUserCredential(username, password);
 
-    const accessToken = this._tokenManager.generateAccessToken({ id });
-    const refreshToken = this._tokenManager.generateRefreshToken({ id });
+    const accessToken = this._tokenManager.generateAccessToken({ userId });
+    const refreshToken = this._tokenManager.generateRefreshToken({ userId });
 
     await this._authenticationsServices.addRefreshToken(refreshToken);
 
@@ -38,9 +38,9 @@ class AuthenticationsHandler {
 
     const { refreshToken } = request.payload;
     await this._authenticationsServices.verifyRefreshToken(refreshToken);
-    const { id } = this._tokenManager.verifyRefreshToken(refreshToken);
+    const { userId } = this._tokenManager.verifyRefreshToken(refreshToken);
 
-    const accessToken = this._tokenManager.generateAccessToken({ id });
+    const accessToken = this._tokenManager.generateAccessToken({ userId });
     return {
       status: 'success',
       message: 'Access Token berhasil diperbarui',
