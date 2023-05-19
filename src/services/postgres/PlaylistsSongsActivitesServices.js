@@ -20,7 +20,7 @@ class PlaylistsSongsServices {
 
     const result = await this._pool.query(query);
 
-    if (!result.rows.length) {
+    if (!result.rowCount) {
       throw new InvariantError('Riwayat aktivitas gagal ditambahkan ke dalam lagu playlist');
     }
 
@@ -34,7 +34,8 @@ class PlaylistsSongsServices {
       LEFT JOIN playlists ON playlists.id = playlists_songs_activities.playlist_id 
       LEFT JOIN songs ON songs.id = playlists_songs_activities.song_id
       LEFT JOIN users ON users.id = playlists.owner
-      WHERE playlists.id = $1`,
+      WHERE playlists.id = $1
+      ORDER BY playlists_songs_activities.time`,
       values: [playlistId],
     };
 
