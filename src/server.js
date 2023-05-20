@@ -2,6 +2,10 @@ require('dotenv').config();
 
 const Hapi = require('@hapi/hapi');
 const Jwt = require('@hapi/jwt');
+const Inert = require('@hapi/inert');
+const path = require('path');
+
+const config = require('./utils/config');
 const albums = require('./api/albums');
 const AlbumsValidator = require('./validator/albums');
 const songs = require('./api/songs');
@@ -15,6 +19,7 @@ const {
   PlaylistsSongsServices,
   CollaborationsServices,
   PlaylistsSongsActivitiesServices,
+  LikesServices,
 } = require('./services/postgres');
 const ClientError = require('./exceptions/ClientError');
 const users = require('./api/users');
@@ -30,9 +35,15 @@ const CollaborationsValidator = require('./validator/collaborations');
 const _exports = require('./api/exports');
 const ProducerService = require('./services/rabbitmq/ProducerServices');
 const ExportsValidator = require('./validator/exports');
+const uploads = require('./api/uploads');
+const UploadsValidator = require('./validator/uploads');
+const StorageServices = require('./services/storage/StorageServices');
+const CacheService = require('./services/redis/CacheServices');
 
 const init = async () => {
+  const cacheServices = new CacheService();
   const albumsServices = new AlbumsServices();
+  const likesServices = new LikesServices(albumsServices, cacheServices);
   const songsServices = new SongsServices();
   const usersServices = new UsersServices();
   const authenticationsServices = new AuthenticationsServices();
@@ -40,10 +51,11 @@ const init = async () => {
   const playlistsServices = new PlaylistsServices(collaborationsServices);
   const playlistsSongsServices = new PlaylistsSongsServices(songsServices);
   const playlistsSongsActivitiesServices = new PlaylistsSongsActivitiesServices();
+  const storageService = new StorageServices(path.resolve(__dirname, 'api/uploads/file/images'));
 
   const server = Hapi.server({
-    port: process.env.PORT,
-    host: process.env.HOST,
+    port: config.app.port,
+    host: config.app.host,
     routes: {
       cors: {
         origin: ['*'],
@@ -54,6 +66,9 @@ const init = async () => {
   await server.register([
     {
       plugin: Jwt,
+    },
+    {
+      plugin: Inert,
     },
   ]);
 
@@ -80,6 +95,7 @@ const init = async () => {
         service: albumsServices,
         validator: AlbumsValidator,
         songService: songsServices,
+        likesServices,
       },
     },
     {
@@ -129,6 +145,14 @@ const init = async () => {
         ExportsServices: ProducerService,
         playlistsServices,
         validator: ExportsValidator,
+      },
+    },
+    {
+      plugin: uploads,
+      options: {
+        uploadsService: storageService,
+        albumsServices,
+        validator: UploadsValidator,
       },
     },
   ]);

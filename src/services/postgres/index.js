@@ -6,6 +6,7 @@ const PlaylistsServices = require('./PlaylistsServices');
 const PlaylistsSongsServices = require('./PlaylistsSongsServices');
 const PlaylistsSongsActivitiesServices = require('./PlaylistsSongsActivitesServices');
 const CollaborationsServices = require('./CollaborationsServices');
+const LikesServices = require('./LikesServices');
 
 module.exports = {
   AlbumsServices,
@@ -16,4 +17,5 @@ module.exports = {
   PlaylistsSongsServices,
   PlaylistsSongsActivitiesServices,
   CollaborationsServices,
+  LikesServices,
 };

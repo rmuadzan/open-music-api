@@ -18,7 +18,7 @@ class ExportsHandler {
     await this._playlistsServices.verifyPlaylistOwner(playlistId, userId);
 
     const message = {
-      userId,
+      playlistId,
       targetEmail: request.payload.targetEmail,
     };
 
