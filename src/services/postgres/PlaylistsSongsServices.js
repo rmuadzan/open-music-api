@@ -18,9 +18,9 @@ class PlaylistsSongsServices {
       values: [id, playlistId, songId],
     };
 
-    const result = await this._pool.query(query);
+    const { rowCount } = await this._pool.query(query);
 
-    if (!result.rowCount) {
+    if (!rowCount) {
       throw new InvariantError('Lagu gagal ditambahkan ke dalam playlist');
     }
   }
@@ -34,9 +34,9 @@ class PlaylistsSongsServices {
       WHERE playlists.id = $1`,
       values: [playlistId],
     };
-    const result = await this._pool.query(query);
+    const { rows } = await this._pool.query(query);
 
-    return result.rows;
+    return rows;
   }
 
   async deletePlaylistsSong(id, playlistId) {
@@ -45,9 +45,9 @@ class PlaylistsSongsServices {
       values: [id, playlistId],
     };
 
-    const result = await this._pool.query(query);
+    const { rowCount } = await this._pool.query(query);
 
-    if (!result.rowCount) {
+    if (!rowCount) {
       throw new NotFoundError('Lagu gagal dihapus. Id tidak ditemukan');
     }
   }

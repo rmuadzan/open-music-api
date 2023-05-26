@@ -18,13 +18,13 @@ class PlaylistsSongsServices {
       values: [id, playlistId, songId, userId, action, time],
     };
 
-    const result = await this._pool.query(query);
+    const { rows, rowCount } = await this._pool.query(query);
 
-    if (!result.rowCount) {
+    if (!rowCount) {
       throw new InvariantError('Riwayat aktivitas gagal ditambahkan ke dalam lagu playlist');
     }
 
-    return result.rows[0].id;
+    return rows[0].id;
   }
 
   async getPlaylistsSongsActivities(playlistId) {
@@ -39,9 +39,9 @@ class PlaylistsSongsServices {
       values: [playlistId],
     };
 
-    const result = await this._pool.query(query);
+    const { rows } = await this._pool.query(query);
 
-    return result.rows;
+    return rows;
   }
 }
 

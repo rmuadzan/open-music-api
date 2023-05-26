@@ -47,13 +47,13 @@ class LikesServices {
         GROUP BY album_id`,
         values: [albumId],
       };
-      const queryResult = await this._pool.query(albumsQuery);
+      const { rows, rowCount } = await this._pool.query(albumsQuery);
 
-      if (!queryResult.rowCount) {
+      if (!rowCount) {
         throw new NotFoundError('Likes album tidak ditemukan');
       }
 
-      const result = queryResult.rows[0];
+      const result = rows[0];
       await this._cacheServices.set(`albums:${albumId}`, JSON.stringify(result));
 
       return { result, status: 'database' };
@@ -67,9 +67,9 @@ class LikesServices {
       values: [userId, albumId],
     };
 
-    const result = await this._pool.query(query);
+    const { rowCount } = await this._pool.query(query);
 
-    if (!result.rowCount) {
+    if (!rowCount) {
       throw new NotFoundError('Gagal batal menyukai album. Id tidak ditemukan');
     }
 
