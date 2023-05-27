@@ -4,8 +4,9 @@ const InvariantError = require('../../exceptions/InvariantError');
 const NotFoundError = require('../../exceptions/NotFoundError');
 
 class AlbumsServices {
-  constructor() {
+  constructor(cacheServices) {
     this._pool = new Pool();
+    this._cacheServices = cacheServices;
   }
 
   async addAlbum({ name, year }) {
@@ -27,18 +28,29 @@ class AlbumsServices {
   }
 
   async getAlbumById(id) {
-    const albumsQuery = {
-      text: 'SELECT id, name, year, cover AS "coverUrl" FROM albums WHERE id = $1',
-      values: [id],
-    };
+    try {
+      const result = await this._cacheServices.get(`albums:${id}`);
+      console.log('1');
+      return { result: JSON.parse(result), status: 'cache' };
+    } catch (error) {
+      const albumsQuery = {
+        text: 'SELECT id, name, year, cover AS "coverUrl" FROM albums WHERE id = $1',
+        values: [id],
+      };
 
-    const { rows, rowCount } = await this._pool.query(albumsQuery);
+      const { rows, rowCount } = await this._pool.query(albumsQuery);
 
-    if (!rowCount) {
-      throw new NotFoundError('Album tidak ditemukan');
+      if (!rowCount) {
+        throw new NotFoundError('Album tidak ditemukan');
+      }
+
+      const result = rows[0];
+      await this._cacheServices.set(`albums:${id}`, JSON.stringify(result));
+
+      console.log('2');
+
+      return { result, status: 'database' };
     }
-
-    return rows[0];
   }
 
   async editAlbumById(id, { name, year }) {
@@ -53,6 +65,8 @@ class AlbumsServices {
     if (!rowCount) {
       throw new NotFoundError('Gagal memperbarui album. Id tidak ditemukan');
     }
+
+    await this._cacheServices.delete(`albums:${id}`);
   }
 
   async deleteAlbumById(id) {
@@ -66,6 +80,8 @@ class AlbumsServices {
     if (!rowCount) {
       throw new NotFoundError('Album gagal dihapus. Id tidak ditemukan');
     }
+
+    await this._cacheServices.delete(`albums:${id}`);
   }
 
   async addAlbumsCover(fileLocation, albumId) {
@@ -75,6 +91,7 @@ class AlbumsServices {
     };
 
     await this._pool.query(query);
+    await this._cacheServices.delete(`albums:${albumId}`);
   }
 
   async verifyAlbumExistence(id) {

@@ -27,11 +27,12 @@ class AlbumsHandler {
     return response;
   }
 
-  async getAlbumByIdHandler(request) {
+  async getAlbumByIdHandler(request, h) {
     const { id } = request.params;
-    const album = await this._service.getAlbumById(id);
+    const { result: album, status } = await this._service.getAlbumById(id);
     const songs = await this._songService.getSongsByAlbumId(id);
-    return {
+
+    const response = h.response({
       status: 'success',
       data: {
         album: {
@@ -39,7 +40,13 @@ class AlbumsHandler {
           songs,
         },
       },
-    };
+    }).code(200);
+
+    if (status === 'cache') {
+      response.header('X-Data-Source', 'cache');
+    }
+
+    return response;
   }
 
   async putAlbumByIdHandler(request) {
@@ -47,6 +54,7 @@ class AlbumsHandler {
     const { id } = request.params;
 
     await this._service.editAlbumById(id, request.payload);
+    console.log('3');
 
     return {
       status: 'success',

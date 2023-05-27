@@ -37,7 +37,7 @@ class LikesServices {
     await this._albumsServices.verifyAlbumExistence(albumId);
 
     try {
-      const result = await this._cacheServices.get(`albums:${albumId}`);
+      const result = await this._cacheServices.get(`albums-like:${albumId}`);
       return { result: JSON.parse(result), status: 'cache' };
     } catch (error) {
       const albumsQuery = {
@@ -54,7 +54,7 @@ class LikesServices {
       }
 
       const result = rows[0];
-      await this._cacheServices.set(`albums:${albumId}`, JSON.stringify(result));
+      await this._cacheServices.set(`albums-like:${albumId}`, JSON.stringify(result));
 
       return { result, status: 'database' };
     }
@@ -73,7 +73,7 @@ class LikesServices {
       throw new NotFoundError('Gagal batal menyukai album. Id tidak ditemukan');
     }
 
-    await this._cacheServices.delete(`albums:${albumId}`);
+    await this._cacheServices.delete(`albums-like:${albumId}`);
   }
 }
 

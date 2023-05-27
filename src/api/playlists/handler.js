@@ -79,15 +79,18 @@ class PlaylistsHandler {
     return response;
   }
 
-  async getSongsfromPlaylistHandler(request) {
+  async getSongsfromPlaylistHandler(request, h) {
     const { id } = request.params;
     const { userId } = request.auth.credentials;
 
     await this._playlistsServices.verifyPlaylistAccess(id, userId);
 
-    const playlist = await this._playlistsServices.getPlaylistById(id);
-    const songs = await this._playlistsSongsServices.getPlaylistsSongs(id);
-    return {
+    const { result: playlist, status: PlaylistStatus } = await this._playlistsServices
+      .getPlaylistById(id);
+    const { result: songs, status: SongsStatus } = await this._playlistsSongsServices
+      .getPlaylistsSongs(id);
+
+    const response = h.response({
       status: 'success',
       data: {
         playlist: {
@@ -95,7 +98,13 @@ class PlaylistsHandler {
           songs,
         },
       },
-    };
+    }).code(200);
+
+    if (PlaylistStatus === 'cache' || SongsStatus === 'cache') {
+      response.header('X-Data-Source', 'cache');
+    }
+
+    return response;
   }
 
   async deleteSongfromPlaylistHandler(request) {
