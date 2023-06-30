@@ -108,7 +108,7 @@ const init = async () => {
     method: 'GET',
     path: '/',
     handler: (request, h) => {
-      h.redirect('/documentation');
+      return h.redirect('/documentation');
     },
   });
 
