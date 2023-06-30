@@ -1,3 +1,4 @@
+const Joi = require('joi');
 const path = require('path');
 
 const routes = (handler) => [
@@ -11,6 +12,21 @@ const routes = (handler) => [
         multipart: true,
         output: 'stream',
         maxBytes: 512000,
+      },
+      tags: ['api'],
+      description: 'Add album cover',
+      validate: {
+        params: Joi.object({
+          id: Joi.string(),
+        }),
+      },
+      response: {
+        status: {
+          201: Joi.object({
+            status: 'success',
+            message: Joi.string(),
+          }),
+        },
       },
     },
   },
