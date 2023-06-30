@@ -104,6 +104,14 @@ const init = async () => {
     }),
   });
 
+  server.route({
+    method: 'GET',
+    path: '/',
+    handler: (request, h) => {
+      h.redirect('/documentation');
+    },
+  });
+
   await server.register([
     {
       plugin: albums,
