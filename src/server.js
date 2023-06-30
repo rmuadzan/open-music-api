@@ -107,9 +107,7 @@ const init = async () => {
   server.route({
     method: 'GET',
     path: '/',
-    handler: (request, h) => {
-      return h.redirect('/documentation');
-    },
+    handler: (request, h) => h.redirect('/documentation'),
   });
 
   await server.register([
